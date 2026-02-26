@@ -7,5 +7,94 @@
     <body>
         <h2>Welcome to In a Binder!</h2>
         <p>This project intends to help you get your TCG collection in order. For the time being it only supports Sorcery: Contested Realm.</p>
+        <p>Please keep in mind that this is VERY early access and not meant to be taken as a release candidate at all.</p>
+        <form>
+        <fieldset>
+            <legend>Choose a set to collect:</legend>
+            <select name="set" id="set">
+                <option value="">-- Select a set --</option>
+                <option value="Alpha">Alpha</option>
+                <option value="Beta">Beta</option>
+                <option value="Alpha-Beta">Alpha + Beta (Base Set)</option>
+                <option value="Arthurian Legends">Arthurian Legends</option>
+                <option value="Dragonlord">Dragonlord</option>
+                <option value="Promotional">Promotional</option>
+                <option value="Gothic">Gothic</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <legend>Collection Type:</legend>
+            <label><input type="radio" id="single-collection" name="collection_type" value="Single Collection">Single Collection</label>
+            <label><input type="radio" id="playset-collection" name="collection_type" value="Playset Collection" checked>Playset Collection</label>
+        </fieldset>
+        <fieldset>
+            <legend>Page Type:</legend>
+            <label><input type="radio" id="9-18-page" name="page_size" value="9/18 Pages" checked>9/18 Pages</label>
+            <label><input type="radio" id="12-24-page" name="page_size" value="12/24 Pages">12/24 Pages</label>
+        </fieldset>
+            <button type="button" onclick="calculatePages()">Proceed</button>
+        </form>
+
+        <div id="result"></div>
+
+        <script src="js/cards.js"></script>
+        <script src="js/setData.js"></script>
+        <script>
+        function setCardChecker(setName) {
+
+        }
+
+        function calculatePages() {
+        let setID = document.getElementById('set').value;
+        let radioButtons = document.getElementsByName('collection_type');
+        let collectionType;
+        let setTotalCards;
+        let pageSizeButtons = document.getElementsByName('page_size');
+        let pageSize;
+        let cardsPerPage;
+        let pagesNeeded;
+
+            if (setID !== "") {
+                // Loop through radio buttons to see which is checked.
+                for (let i = 0; i < radioButtons.length; i++) {
+                    if (radioButtons[i].checked) {
+                        collectionType = radioButtons[i].value;
+                    }
+                }
+
+                // Loop through radio buttons to find cards per page.
+                for (let i = 0; i < pageSizeButtons.length; i++) {
+                    if (pageSizeButtons[i].checked) {
+                        pageSize = pageSizeButtons[i].value;
+                    }
+                }
+
+                if (collectionType === "Playset Collection") {
+                    setTotalCards = SET_DATA[setID].playset;
+                } else {
+                    setTotalCards = SET_DATA[setID].collection;
+                }
+
+                if (pageSize === "9/18 Pages") {
+                    cardsPerPage = 18;
+                } else {
+                    cardsPerPage = 24;
+                }
+
+                pagesNeeded = Math.ceil(setTotalCards / cardsPerPage);
+
+                console.clear();
+                // Output variables to console.
+                console.log("setID: " + setID);
+                console.log("collectionType: " + collectionType);
+                console.log("setTotalCards: " + setTotalCards);
+                console.log("cardsPerPage: " + cardsPerPage);
+                console.log("pagesNeeded: " + pagesNeeded);
+
+                document.getElementById('result').innerText = "You would need " + pagesNeeded + " pages for your binder in order to have a " + collectionType + " in one place.";
+            }
+            
+        }
+        </script>
     </body>
 </html>
