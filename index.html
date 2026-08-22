@@ -1,100 +1,430 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>In a Binder - Collection Storage Made Easy!</title>
-    </head>
-    <body>
-        <h2>Welcome to In a Binder!</h2>
-        <p>This project intends to help you get your TCG collection in order. For the time being it only supports Sorcery: Contested Realm.</p>
-        <p>Please keep in mind that this is VERY early access and not meant to be taken as a release candidate at all.</p>
-        <form>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>In a Binder - Sorcery Collection Calculator</title>
+  <style>
+    :root {
+      --ink: #17130f;
+      --muted: #675e50;
+      --paper: #e8dcc2;
+      --paper-light: #f4ecd9;
+      --paper-dark: #cdbb98;
+      --gold: #a47a31;
+      --gold-light: #d0ae67;
+      --line: rgba(71, 53, 30, .32);
+      --shadow: rgba(13, 10, 7, .55);
+      --fire: #8d3427;
+      --water: #315c73;
+      --earth: #56633b;
+      --air: #8d7c5d;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: Georgia, "Times New Roman", serif;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,.045), transparent 24%),
+        radial-gradient(circle at 80% 75%, rgba(164,122,49,.08), transparent 28%),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px),
+        #17140f;
+      display: grid;
+      place-items: center;
+      padding: 42px 20px;
+    }
+
+    .page {
+      width: min(940px, 100%);
+    }
+
+    .brand {
+      text-align: center;
+      color: #e7d7b7;
+      margin-bottom: 18px;
+      text-shadow: 0 2px 12px #000;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 10px;
+      border: 1px solid var(--gold-light);
+      transform: rotate(45deg);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 4px rgba(164,122,49,.1), inset 0 0 18px rgba(208,174,103,.1);
+    }
+
+    .brand-mark::before {
+      content: "✦";
+      transform: rotate(-45deg);
+      font-size: 24px;
+      color: var(--gold-light);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 7vw, 4.2rem);
+      font-weight: 500;
+      letter-spacing: .04em;
+      line-height: .95;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: #bbaa88;
+      font-size: .9rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    .sheet {
+      position: relative;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,.14), rgba(90,65,30,.05)),
+        repeating-linear-gradient(0deg, transparent 0 3px, rgba(85,60,28,.018) 3px 4px),
+        var(--paper);
+      border: 1px solid #9d875e;
+      box-shadow: 0 22px 60px var(--shadow), inset 0 0 55px rgba(89,64,28,.12);
+      padding: clamp(24px, 5vw, 52px);
+    }
+
+    .sheet::before,
+    .sheet::after {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border: 1px solid rgba(100,75,38,.34);
+      pointer-events: none;
+    }
+
+    .sheet::after {
+      inset: 15px;
+      border-color: rgba(255,255,255,.22);
+    }
+
+    .intro {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto 34px;
+      text-align: center;
+    }
+
+    .intro h2 {
+      margin: 0 0 8px;
+      font-size: 1.45rem;
+      font-weight: 500;
+    }
+
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    form {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 22px;
+    }
+
+    fieldset {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+
+    legend {
+      width: 100%;
+      margin-bottom: 10px;
+      color: #4e3d27;
+      font-size: .76rem;
+      font-weight: bold;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    select {
+      width: 100%;
+      appearance: none;
+      border: 1px solid #9d875e;
+      border-radius: 2px;
+      padding: 15px 44px 15px 16px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 1rem;
+      background:
+        linear-gradient(45deg, transparent 50%, #6c5735 50%) calc(100% - 20px) 50% / 6px 6px no-repeat,
+        linear-gradient(135deg, #6c5735 50%, transparent 50%) calc(100% - 14px) 50% / 6px 6px no-repeat,
+        rgba(255,255,255,.28);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.35);
+      cursor: pointer;
+    }
+
+    select:focus-visible, .choice input:focus-visible + span, button:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .choice-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .choice { position: relative; cursor: pointer; }
+    .choice input { position: absolute; opacity: 0; pointer-events: none; }
+
+    .choice span {
+      min-height: 68px;
+      border: 1px solid #aa9875;
+      background: rgba(255,255,255,.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 12px 15px;
+      transition: .16s ease;
+    }
+
+    .choice strong { font-size: 1rem; font-weight: 600; }
+    .choice small { margin-top: 4px; color: var(--muted); font-size: .78rem; }
+
+    .choice input:checked + span {
+      border-color: #6e542a;
+      background: rgba(164,122,49,.13);
+      box-shadow: inset 4px 0 0 var(--gold), inset 0 0 18px rgba(164,122,49,.08);
+    }
+
+    .choice:hover span { border-color: #7f6843; }
+
+    button {
+      width: 100%;
+      border: 1px solid #2f271c;
+      border-radius: 2px;
+      padding: 15px 20px;
+      color: #f2e6cc;
+      background: linear-gradient(#4b3c28, #2b241a);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 3px 0 #17130e;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: .88rem;
+      font-weight: bold;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    button:hover { filter: brightness(1.12); }
+    button:active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 1px 0 #17130e; }
+
+    #result {
+      position: relative;
+      z-index: 1;
+      display: none;
+      margin-top: 26px;
+      border-top: 1px solid var(--line);
+      padding-top: 26px;
+    }
+
+    #result.visible { display: block; animation: reveal .24s ease-out; }
+
+    .result-card {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      border: 1px solid #9d875e;
+      background: rgba(255,255,255,.18);
+      box-shadow: inset 0 0 22px rgba(105,77,38,.06);
+    }
+
+    .page-count {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      padding: 22px;
+      border-right: 1px solid #9d875e;
+      background: rgba(164,122,49,.1);
+    }
+
+    .page-count strong { font-size: 3rem; line-height: 1; font-weight: 500; }
+    .page-count span { margin-top: 5px; color: var(--muted); font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; }
+
+    .result-copy { padding: 22px 24px; }
+    .result-copy h3 { margin: 0 0 7px; font-size: 1.18rem; font-weight: 500; }
+    .result-copy p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+    .details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 18px;
+      margin-top: 13px;
+      color: #514735;
+      font-size: .78rem;
+    }
+
+    .element-line {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      height: 3px;
+      margin-top: 18px;
+      opacity: .8;
+    }
+    .element-line span:nth-child(1) { background: var(--air); }
+    .element-line span:nth-child(2) { background: var(--fire); }
+    .element-line span:nth-child(3) { background: var(--earth); }
+    .element-line span:nth-child(4) { background: var(--water); }
+
+    .footnote {
+      margin: 18px 0 0;
+      text-align: center;
+      color: #82775f;
+      font-size: .74rem;
+    }
+
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 620px) {
+      body { padding: 20px 12px; }
+      .sheet { padding: 28px 22px; }
+      .choice-grid { grid-template-columns: 1fr; }
+      .result-card { grid-template-columns: 1fr; }
+      .page-count { border-right: 0; border-bottom: 1px solid #9d875e; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="brand">
+      <div class="brand-mark" aria-hidden="true"></div>
+      <h1>In a Binder</h1>
+      <p class="subtitle">Collection Storage Calculator</p>
+    </header>
+
+    <section class="sheet">
+      <div class="intro">
+        <h2>Plan the archive before filling the shelves.</h2>
+        <p>Choose a Sorcery set, the kind of collection you are building, and your binder page format. The calculator will work out how many pages the collection requires.</p>
+        <div class="element-line" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      </div>
+
+      <form id="binder-form">
         <fieldset>
-            <legend>Choose a set to collect:</legend>
-            <select name="set" id="set">
-                <option value="">-- Select a set --</option>
-                <option value="Alpha">Alpha</option>
-                <option value="Beta">Beta</option>
-                <option value="Alpha-Beta">Alpha + Beta (Base Set)</option>
-                <option value="Arthurian Legends">Arthurian Legends</option>
-                <option value="Dragonlord">Dragonlord</option>
-                <option value="Promotional">Promotional</option>
-                <option value="Gothic">Gothic</option>
-            </select>
+          <legend>Choose a set</legend>
+          <select name="set" id="set" required>
+            <option value="">Select a Sorcery set...</option>
+            <option value="Alpha">Alpha</option>
+            <option value="Beta">Beta</option>
+            <option value="Alpha-Beta">Alpha + Beta (Base Set)</option>
+            <option value="Arthurian Legends">Arthurian Legends</option>
+            <option value="Dragonlord">Dragonlord</option>
+            <option value="Promotional">Promotional</option>
+            <option value="Gothic">Gothic</option>
+          </select>
         </fieldset>
+
         <fieldset>
-            <legend>Collection Type:</legend>
-            <label><input type="radio" id="single-collection" name="collection_type" value="Single Collection">Single Collection</label>
-            <label><input type="radio" id="playset-collection" name="collection_type" value="Playset Collection" checked>Playset Collection</label>
+          <legend>Collection type</legend>
+          <div class="choice-grid">
+            <label class="choice">
+              <input type="radio" id="single-collection" name="collection_type" value="Single Collection">
+              <span><strong>Single Collection</strong><small>One copy of every card.</small></span>
+            </label>
+            <label class="choice">
+              <input type="radio" id="playset-collection" name="collection_type" value="Playset Collection" checked>
+              <span><strong>Playset Collection</strong><small>A complete playable set.</small></span>
+            </label>
+          </div>
         </fieldset>
+
         <fieldset>
-            <legend>Page Type:</legend>
-            <label><input type="radio" id="9-18-page" name="page_size" value="9/18 Pages" checked>9/18 Pages</label>
-            <label><input type="radio" id="12-24-page" name="page_size" value="12/24 Pages">12/24 Pages</label>
+          <legend>Binder page format</legend>
+          <div class="choice-grid">
+            <label class="choice">
+              <input type="radio" id="9-18-page" name="page_size" value="9/18 Pages" checked>
+              <span><strong>9 / 18 Pages</strong><small>9 pockets per side, 18 cards total.</small></span>
+            </label>
+            <label class="choice">
+              <input type="radio" id="12-24-page" name="page_size" value="12/24 Pages">
+              <span><strong>12 / 24 Pages</strong><small>12 pockets per side, 24 cards total.</small></span>
+            </label>
+          </div>
         </fieldset>
-            <button type="button" onclick="calculatePages()">Proceed</button>
-        </form>
 
-        <div id="result"></div>
+        <button type="submit">Calculate Binder</button>
+      </form>
 
-        <script src="js/cards.js"></script>
-        <script src="js/setData.js"></script>
-        <script>
-        function setCardChecker(setName) {
+      <div id="result" aria-live="polite"></div>
+      <p class="footnote">Designed for Sorcery: Contested Realm collections.</p>
+    </section>
+  </main>
 
-        }
+  <script src="js/cards.js"></script>
+  <script src="js/setData.js"></script>
+  <script>
+    document.getElementById('binder-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      calculatePages();
+    });
 
-        function calculatePages() {
-        let setID = document.getElementById('set').value;
-        let radioButtons = document.getElementsByName('collection_type');
-        let collectionType;
-        let setTotalCards;
-        let pageSizeButtons = document.getElementsByName('page_size');
-        let pageSize;
-        let cardsPerPage;
-        let pagesNeeded;
+    function calculatePages() {
+      const setID = document.getElementById('set').value;
+      const result = document.getElementById('result');
 
-            if (setID !== "") {
-                // Loop through radio buttons to see which is checked.
-                for (let i = 0; i < radioButtons.length; i++) {
-                    if (radioButtons[i].checked) {
-                        collectionType = radioButtons[i].value;
-                    }
-                }
+      if (!setID) {
+        result.innerHTML = '<div class="result-card"><div class="result-copy"><h3>Choose a set first.</h3><p>The binder spirits are capable of arithmetic, regrettably not mind reading.</p></div></div>';
+        result.classList.add('visible');
+        document.getElementById('set').focus();
+        return;
+      }
 
-                // Loop through radio buttons to find cards per page.
-                for (let i = 0; i < pageSizeButtons.length; i++) {
-                    if (pageSizeButtons[i].checked) {
-                        pageSize = pageSizeButtons[i].value;
-                    }
-                }
+      if (typeof SET_DATA === 'undefined' || !SET_DATA[setID]) {
+        result.innerHTML = '<div class="result-card"><div class="result-copy"><h3>Set data unavailable.</h3><p>The selected set could not be found in SET_DATA. Check that js/setData.js is present and contains this set.</p></div></div>';
+        result.classList.add('visible');
+        return;
+      }
 
-                if (collectionType === "Playset Collection") {
-                    setTotalCards = SET_DATA[setID].playset;
-                } else {
-                    setTotalCards = SET_DATA[setID].collection;
-                }
+      const collectionType = document.querySelector('input[name="collection_type"]:checked').value;
+      const pageSize = document.querySelector('input[name="page_size"]:checked').value;
+      const setTotalCards = collectionType === 'Playset Collection'
+        ? SET_DATA[setID].playset
+        : SET_DATA[setID].collection;
+      const cardsPerPage = pageSize === '9/18 Pages' ? 18 : 24;
+      const pagesNeeded = Math.ceil(setTotalCards / cardsPerPage);
+      const unusedSlots = (pagesNeeded * cardsPerPage) - setTotalCards;
 
-                if (pageSize === "9/18 Pages") {
-                    cardsPerPage = 18;
-                } else {
-                    cardsPerPage = 24;
-                }
-
-                pagesNeeded = Math.ceil(setTotalCards / cardsPerPage);
-
-                console.clear();
-                // Output variables to console.
-                console.log("setID: " + setID);
-                console.log("collectionType: " + collectionType);
-                console.log("setTotalCards: " + setTotalCards);
-                console.log("cardsPerPage: " + cardsPerPage);
-                console.log("pagesNeeded: " + pagesNeeded);
-
-                document.getElementById('result').innerText = "You would need " + pagesNeeded + " pages for your binder in order to have a " + collectionType + " in one place.";
-            }
-            
-        }
-        </script>
-    </body>
+      result.innerHTML = `
+        <div class="result-card">
+          <div class="page-count">
+            <strong>${pagesNeeded}</strong>
+            <span>${pagesNeeded === 1 ? 'page' : 'pages'}</span>
+          </div>
+          <div class="result-copy">
+            <h3>${setID} - ${collectionType}</h3>
+            <p>You need <strong>${pagesNeeded} ${pagesNeeded === 1 ? 'page' : 'pages'}</strong> to keep this collection together in one binder.</p>
+            <div class="details">
+              <span>${setTotalCards.toLocaleString()} cards</span>
+              <span>${cardsPerPage} cards per page</span>
+              <span>${unusedSlots} unused ${unusedSlots === 1 ? 'slot' : 'slots'} on the final page</span>
+            </div>
+          </div>
+        </div>`;
+      result.classList.remove('visible');
+      void result.offsetWidth;
+      result.classList.add('visible');
+    }
+  </script>
+</body>
 </html>
